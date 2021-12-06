@@ -1,0 +1,8 @@
+Postgresql:
+  PostgresqlHost: "localhost"
+  PostgresqlPort: "5432"
+  PostgresqlUser: "postgres"
+  PostgresqlPassword: "iobytex"
+  PostgresqlDbname: "price"
+  PostgresqlSslMode: "disable"
+  PgDriver: "pgx"
