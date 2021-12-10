@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"joborder/internal/model"
 	"joborder/pkg/gorm_errors"
 )
@@ -141,8 +142,38 @@ func (repository *repositoryImpl) SetOrder(ctx context.Context,createdBy uint) e
 
 func (repository *repositoryImpl) AddOrderItems(ctx context.Context,item *[]model.OrderItem) error {
 
-	if result := repository.db.WithContext(ctx).CreateInBatches(*item,len(*item)); result.Error != nil {
-		return gorm_errors.GormError(result.Error)
+	err := repository.db.Transaction(func(tx *gorm.DB) error {
+		stockProductId := make([]uint, 0)
+		for _, v := range *item {
+			stockProductId = append(stockProductId, v.ProductID)
+		}
+		var stock []model.Stock
+		// SELECT * FROM `stock` FOR UPDATE Locking
+		if stockResult := tx.WithContext(ctx).Clauses(clause.Locking{Strength: "UPDATE"}).Where("product_id IN ?", stockProductId).First(&stock); stockResult.Error != nil {
+			return gorm_errors.GormError(stockResult.Error)
+		}
+
+		for _, data := range stock {
+			var value uint
+			for _, orderItem := range *item {
+				if orderItem.ProductID == data.ProductID {
+					value = orderItem.Quantity
+					break
+				}
+			}
+			if updateStockQuantityValueResult := tx.WithContext(ctx).Where("product_id = ?", data.ProductID).UpdateColumn("quantity", gorm.Expr("quantity - ?", value)); updateStockQuantityValueResult != nil {
+				return gorm_errors.GormError(updateStockQuantityValueResult.Error)
+			}
+		}
+
+		if result := tx.WithContext(ctx).Create(*item); result.Error != nil {
+			return gorm_errors.GormError(result.Error)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
 	}
 
 	return nil

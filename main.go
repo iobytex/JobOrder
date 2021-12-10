@@ -3,6 +3,7 @@ package main
 import (
 	"go.uber.org/zap"
 	"joborder/config"
+	"joborder/internal/model"
 	"joborder/internal/server"
 	"joborder/pkg/postgres"
 )
@@ -22,12 +23,17 @@ func main() {
 		return
 	}
 
-	conn, err := postgres.InitDatabaseConn(getConfig)
+	pgsqlConn, err := postgres.InitDatabaseConn(getConfig)
 	if err != nil {
 		return
 	}
 
-	s := server.NewServer(conn,logger)
+	migrateErr := pgsqlConn.AutoMigrate(&model.Category{},&model.User{},&model.Product{}, &model.Order{},&model.OrderItem{},&model.Stock{})
+	if migrateErr != nil {
+		panic(migrateErr)
+	}
+
+	s := server.NewServer(pgsqlConn,logger)
 
 	serverErr := s.Run()
 	if serverErr != nil {
