@@ -14,20 +14,20 @@ import (
 )
 
 type server struct {
-	engine *gin.Engine
+	*gin.Engine
 	db *gorm.DB
 	logger *zap.Logger
 }
 
 func NewServer(db *gorm.DB,logger *zap.Logger) *server {
 	return &server{
-		engine: gin.Default(),
-		db: db,
-		logger: logger,
+		gin.Default(),
+		db,
+		logger,
 	}
 }
 
-func (s *server) Run()  error {
+func (s *server) Start()  error {
 
 
 	repoImpl := repository.NewRepositoryImpl(s.db, s.logger)
@@ -41,7 +41,7 @@ func (s *server) Run()  error {
 		s.logger.Sugar().Infof("%s",jwtError.Error())
 	}
 
-	v1 := s.engine.Group("/v1")
+	v1 := s.Group("/v1")
 	{
 		handler.NewJobOrderHandler(v1, serviceImpl , s.logger,gonicJwt)
 	}
@@ -55,7 +55,7 @@ func (s *server) Run()  error {
 
 	ginRunErr := make(chan error)
 	go func() {
-		err := s.engine.Run(":"+port)
+		err := s.Run(":"+port)
 		if err != nil {
 			ginRunErr <- errors.Wrap(err,"")
 		}

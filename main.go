@@ -35,7 +35,7 @@ func main() {
 
 	s := server.NewServer(pgsqlConn,logger)
 
-	serverErr := s.Run()
+	serverErr := s.Start()
 	if serverErr != nil {
 		logger.Sugar().Error(serverErr)
 		return

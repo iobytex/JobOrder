@@ -26,7 +26,6 @@ func NewJobOrderHandler( group *gin.RouterGroup,service joborder.Service,logger 
 	}
 }
 
-
 func (joh *jobOrderHandler) CreateUser() gin.HandlerFunc  {
 	return func(context *gin.Context) {
 		var userRequest model.UserRequest
