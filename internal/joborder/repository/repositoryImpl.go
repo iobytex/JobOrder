@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -143,6 +144,7 @@ func (repository *repositoryImpl) SetOrder(ctx context.Context,createdBy uint) e
 func (repository *repositoryImpl) AddOrderItems(ctx context.Context,item *[]model.OrderItem) error {
 
 	err := repository.db.Transaction(func(tx *gorm.DB) error {
+
 		stockProductId := make([]uint, 0)
 		for _, v := range *item {
 			stockProductId = append(stockProductId, v.ProductID)
@@ -171,7 +173,7 @@ func (repository *repositoryImpl) AddOrderItems(ctx context.Context,item *[]mode
 		}
 
 		return nil
-	})
+	},&sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return err
 	}
