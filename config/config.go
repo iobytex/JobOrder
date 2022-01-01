@@ -53,12 +53,12 @@ func GetConfig() (*Config,error) {
 }
 
 func ParseConfig(v *viper.Viper)  (*Config,error) {
-	var config *Config
+	var config Config
 	err := v.Unmarshal(&config)
 	if err != nil {
 		fmt.Printf("unable to decode into struct: %v",err)
 		return nil, errors.Wrap(err,"Parse Config:")
 	}
 
-	return config,nil
+	return &config,nil
 }

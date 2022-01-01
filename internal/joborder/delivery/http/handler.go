@@ -74,21 +74,20 @@ func (joh *jobOrderHandler) CreateUser() gin.HandlerFunc  {
 
 func (joh *jobOrderHandler) AddCategories() gin.HandlerFunc  {
 	return func(context *gin.Context) {
-		type request struct {
+		var request struct {
 			Name []string `json:"categories"`
 		}
 
-		var req request
 
-		err := context.ShouldBind(&req)
+		err := context.ShouldBind(&request)
 		if err != nil {
 			joh.logger.Sugar().Error(err.Error())
-			joh.logger.Sugar().Info(req)
+			joh.logger.Sugar().Info(request)
 			context.JSON(http.StatusNotAcceptable, gin.H{"message": err.Error()})
 			return
 		}
 
-		updateCategoryErr := joh.service.AddCategories(context, &req.Name)
+		updateCategoryErr := joh.service.AddCategories(context, &request.Name)
 		if updateCategoryErr != nil {
 			context.JSON(http.StatusNotFound, gin.H{"message": updateCategoryErr.Error()})
 			return
@@ -118,22 +117,20 @@ func (joh *jobOrderHandler) GetCategories() gin.HandlerFunc  {
 
 func (joh *jobOrderHandler) UpdateCategory() gin.HandlerFunc  {
 	return func(context *gin.Context) {
-		type request struct {
+		var request struct {
 			CategoryId uint `form:"category_id" binding:"required"`
 			NewCategoryName string `form:"name" binding:"required"`
 		}
 
-		var req request
-
-		err := context.ShouldBind(&req)
+		err := context.ShouldBind(&request)
 		if err != nil {
 			joh.logger.Sugar().Error(err.Error())
-			joh.logger.Sugar().Info(req)
+			joh.logger.Sugar().Info(request)
 			context.JSON(http.StatusNotAcceptable, gin.H{"message": err.Error()})
 			return
 		}
 
-		updateCategoryErr := joh.service.UpdateCategory(context, req.CategoryId, req.NewCategoryName)
+		updateCategoryErr := joh.service.UpdateCategory(context, request.CategoryId, request.NewCategoryName)
 		if updateCategoryErr != nil {
 			context.JSON(http.StatusNotFound, gin.H{"message": updateCategoryErr.Error()})
 			return
@@ -148,21 +145,19 @@ func (joh *jobOrderHandler) UpdateCategory() gin.HandlerFunc  {
 
 func (joh *jobOrderHandler) DeleteCategories() gin.HandlerFunc  {
 	return func(context *gin.Context) {
-		type request struct {
+		var request struct {
 			CategoryId []uint `form:"category_id" binding:"required"`
 		}
 
-		var req request
-
-		err := context.ShouldBind(&req)
+		err := context.ShouldBind(&request)
 		if err != nil {
 			joh.logger.Sugar().Error(err.Error())
-			joh.logger.Sugar().Info(req)
+			joh.logger.Sugar().Info(request)
 			context.JSON(http.StatusNotAcceptable, gin.H{"message": err.Error()})
 			return
 		}
 
-		categoriesErr := joh.service.DeleteCategories(context,&req.CategoryId)
+		categoriesErr := joh.service.DeleteCategories(context,&request.CategoryId)
 		if categoriesErr != nil {
 			context.JSON(http.StatusNotFound, gin.H{"message": categoriesErr.Error()})
 			return
@@ -178,20 +173,19 @@ func (joh *jobOrderHandler) DeleteCategories() gin.HandlerFunc  {
 
 func (joh *jobOrderHandler) AddProducts() gin.HandlerFunc  {
 	return func(context *gin.Context) {
-		type request struct {
+		var request struct {
 			Product []model.ProductRequest `json:"products"`
 		}
 
-		var req request
 
-		if err := context.ShouldBindJSON(&req); err != nil {
+		if err := context.ShouldBindJSON(&request); err != nil {
 			joh.logger.Sugar().Error(err.Error())
-			joh.logger.Sugar().Info(req)
+			joh.logger.Sugar().Info(request)
 			context.JSON(http.StatusNotAcceptable, gin.H{"message": err.Error()})
 			return
 		}
 
-		err := joh.service.AddProducts(context,&req.Product)
+		err := joh.service.AddProducts(context,&request.Product)
 		if err != nil {
 			context.JSON(http.StatusNotAcceptable, gin.H{"message": err.Error()})
 			return
@@ -206,19 +200,20 @@ func (joh *jobOrderHandler) AddProducts() gin.HandlerFunc  {
 
 func (joh *jobOrderHandler) GetProducts() gin.HandlerFunc  {
 	return func(context *gin.Context) {
-		type request struct {
+		var request struct {
 			categoryId uint `form:"category_id" binding:"required"`
 		}
-		var req request
-		err := context.ShouldBind(req)
+
+
+		err := context.ShouldBind(&request)
 		if err != nil {
 			joh.logger.Sugar().Error(err.Error())
-			joh.logger.Sugar().Info(req)
+			joh.logger.Sugar().Info(request)
 			context.JSON(http.StatusNotAcceptable, gin.H{"message": err.Error()})
 			return
 		}
 
-		products, err := joh.service.GetProducts(context, req.categoryId)
+		products, err := joh.service.GetProducts(context, request.categoryId)
 		if err != nil {
 			context.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			return
@@ -233,21 +228,20 @@ func (joh *jobOrderHandler) GetProducts() gin.HandlerFunc  {
 
 func (joh *jobOrderHandler) UpdateProduct() gin.HandlerFunc  {
 	return func(context *gin.Context) {
-		type request struct {
+		var request struct {
 			CategoryId uint `json:"category_id"`
 			ProductId uint `json:"product_id"`
 			Product map[string]interface{} `json:"product"`
 		}
 
-		var req request
 
-		err := context.ShouldBindJSON(&req)
+		err := context.ShouldBindJSON(&request)
 		if err != nil {
 			context.JSON(http.StatusNotAcceptable, gin.H{"message": err.Error()})
 			return
 		}
 
-		updateErr := joh.service.UpdateProduct(context, req.CategoryId, req.ProductId, &req.Product)
+		updateErr := joh.service.UpdateProduct(context, request.CategoryId, request.ProductId, &request.Product)
 		if updateErr != nil {
 			context.JSON(http.StatusNotFound, gin.H{"message": updateErr.Error()})
 			return
@@ -262,19 +256,18 @@ func (joh *jobOrderHandler) UpdateProduct() gin.HandlerFunc  {
 
 func (joh *jobOrderHandler) DeleteProducts() gin.HandlerFunc  {
 	return func(context *gin.Context) {
-		type request struct {
+		var request struct {
 			ProductId []uint `json:"product_id"`
 		}
 
-		var req request
 
-		err := context.ShouldBindJSON(&req)
+		err := context.ShouldBindJSON(&request)
 		if err != nil {
 			context.JSON(http.StatusNotAcceptable, gin.H{"message": err.Error()})
 			return
 		}
 
-		deletedProductErr := joh.service.DeleteProducts(context, &req.ProductId)
+		deletedProductErr := joh.service.DeleteProducts(context, &request.ProductId)
 		if deletedProductErr != nil {
 			context.JSON(http.StatusNotFound, gin.H{"message": deletedProductErr.Error()})
 			return
@@ -291,19 +284,18 @@ func (joh *jobOrderHandler) DeleteProducts() gin.HandlerFunc  {
 
 func (joh *jobOrderHandler) SetOrder() gin.HandlerFunc  {
 	return func(context *gin.Context) {
-		type request struct {
+		var request struct {
 			CreatedBy uint `json:"created_by"`
 		}
 
-		var req request
 
-		err := context.ShouldBindJSON(&req)
+		err := context.ShouldBindJSON(&request)
 		if err != nil {
 			context.JSON(http.StatusNotAcceptable, gin.H{"message": err.Error()})
 			return
 		}
 
-		setOrderErr := joh.service.SetOrder(context, req.CreatedBy)
+		setOrderErr := joh.service.SetOrder(context, request.CreatedBy)
 		if setOrderErr != nil {
 			context.JSON(http.StatusNotFound, gin.H{"message": setOrderErr.Error()})
 			return
@@ -318,19 +310,17 @@ func (joh *jobOrderHandler) SetOrder() gin.HandlerFunc  {
 
 func (joh *jobOrderHandler) AddOrderItems() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		type request struct {
+		var request struct {
 			OrderItem []model.OrderItemRequest `json:"order_item"`
 		}
 
-		var req request
-
-		err := context.ShouldBindJSON(&req)
+		err := context.ShouldBindJSON(&request)
 		if err != nil {
 			context.JSON(http.StatusNotAcceptable, gin.H{"message": err.Error()})
 			return
 		}
 
-		AddOrderItemsErr := joh.service.AddOrderItems(context, &req.OrderItem)
+		AddOrderItemsErr := joh.service.AddOrderItems(context, &request.OrderItem)
 		if AddOrderItemsErr != nil {
 			context.JSON(http.StatusNotFound, gin.H{"message": AddOrderItemsErr.Error()})
 			return
@@ -344,19 +334,17 @@ func (joh *jobOrderHandler) AddOrderItems() gin.HandlerFunc {
 }
 func (joh *jobOrderHandler) GetOrderItems() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		type request struct {
+		var request struct {
 			OrderId uint `json:"order_id"`
 		}
 
-		var req request
-
-		err := context.ShouldBindJSON(&req)
+		err := context.ShouldBindJSON(&request)
 		if err != nil {
 			context.JSON(http.StatusNotAcceptable, gin.H{"message": err.Error()})
 			return
 		}
 
-		getOrderItems,getOrderItemsErr := joh.service.GetOrderItems(context, req.OrderId)
+		getOrderItems,getOrderItemsErr := joh.service.GetOrderItems(context, request.OrderId)
 		if getOrderItemsErr != nil {
 			context.JSON(http.StatusNotFound, gin.H{"message": getOrderItemsErr.Error()})
 			return
