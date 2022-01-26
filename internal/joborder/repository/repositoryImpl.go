@@ -68,7 +68,8 @@ func (repository *repositoryImpl) AddCategories(ctx context.Context,name *[]stri
 }
 
 func (repository *repositoryImpl) GetCategories(ctx context.Context) (*[]model.Category,error)  {
-	var categories []model.Category
+
+	categories := make([]model.Category,0)
 
 	if result := repository.db.WithContext(ctx).Find(&categories); result.Error != nil {
 		return nil,gorm_errors.GormError(result.Error)
@@ -103,10 +104,13 @@ func (repository *repositoryImpl) AddProducts(ctx context.Context,product *[]mod
 
 
 func (repository *repositoryImpl) GetProducts(ctx context.Context,categoryId uint) (*[]model.Product,error) {
-	var products []model.Product
+
+	products := make([]model.Product,0)
+
 	if result := repository.db.WithContext(ctx).Where("category_id <> ?",categoryId).Find(&products); result.Error != nil {
 		return nil,gorm_errors.GormError(result.Error)
 	}
+
 	return &products,nil
 }
 

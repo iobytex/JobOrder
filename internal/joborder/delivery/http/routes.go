@@ -2,7 +2,6 @@ package http
 
 func (joh *jobOrderHandler) JobOrderMapRoute(){
 	joh.group.POST("/create/user",joh.CreateUser())
-
 	joh.group.GET("/check/user",joh.middleware.LoginHandler)
 
 	joh.group.GET("/refresh_token",joh.middleware.RefreshHandler)

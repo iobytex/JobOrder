@@ -14,16 +14,16 @@ import (
 )
 
 type server struct {
-	*gin.Engine
+	engine *gin.Engine
 	db *gorm.DB
 	logger *zap.Logger
 }
 
 func NewServer(db *gorm.DB,logger *zap.Logger) *server {
 	return &server{
-		gin.Default(),
-		db,
-		logger,
+		engine: gin.Default(),
+		db: db,
+		logger: logger,
 	}
 }
 
@@ -35,18 +35,18 @@ func (s *server) Start()  error {
 
 	middleManager := middleware.NewMiddleWareManager(serviceImpl)
 	gonicJwt,jwtError := jwt.New(middleManager.MiddleWareHandler())
+
+	v1 := s.engine.Group("/v1")
+	{
+		jobOrderHandler := handler.NewJobOrderHandler(v1, serviceImpl , s.logger,gonicJwt)
+		jobOrderHandler.JobOrderMapRoute()
+	}
+
 	s.MapRoutes()
 
 	if jwtError != nil {
 		s.logger.Sugar().Infof("%s",jwtError.Error())
 	}
-
-	v1 := s.Group("/v1")
-	{
-		handler.NewJobOrderHandler(v1, serviceImpl , s.logger,gonicJwt)
-	}
-
-
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -55,7 +55,7 @@ func (s *server) Start()  error {
 
 	ginRunErr := make(chan error)
 	go func() {
-		err := s.Run(":"+port)
+		err := s.engine.Run(":"+port)
 		if err != nil {
 			ginRunErr <- errors.Wrap(err,"")
 		}
